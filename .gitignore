@@ -76,3 +76,6 @@ yarn-error.log*
 /api/coverage/
 /api/logs/
 /api/*.tsbuildinfo
+
+# todo
+todo.md
