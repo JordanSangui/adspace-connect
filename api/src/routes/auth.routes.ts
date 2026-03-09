@@ -1,11 +1,12 @@
 import { Router, Request, Response, NextFunction } from 'express';
+import type { Router as IRouter } from 'express';
 import { z } from 'zod';
 import { authLimiter } from '../middleware/rateLimiter';
 import { requireAuth } from '../middleware/auth';
 import { supabase } from '../lib/supabase';
 import { auditLog } from '../services/audit.service';
 
-const router = Router();
+const router: IRouter = Router();
 
 // ─── Schémas de validation Zod ───────────────────────────────────────────────
 
@@ -52,7 +53,7 @@ async function registerHandler(req: Request, res: Response, next: NextFunction):
       entityType: 'user',
       entityId: data.user?.id,
       payload: { email, role },
-      ipAddress: req.ip,
+      ipAddress: Array.isArray(req.ip) ? req.ip[0] : req.ip,
     });
 
     res.status(201).json({
@@ -84,18 +85,19 @@ async function loginHandler(req: Request, res: Response, next: NextFunction): Pr
       .select('*')
       .eq('id', data.user.id)
       .single();
-
     if (profileError || !profile) {
-      res.status(403).json({ error: 'Profil utilisateur introuvable.' });
+      res.status(403).json({ error: 'Profil utilisateur non trouvé.' });
       return;
     }
+
+    
 
     auditLog({
       actorId: data.user.id,
       action: 'user.login',
       entityType: 'user',
       entityId: data.user.id,
-      ipAddress: req.ip,
+      ipAddress: Array.isArray(req.ip) ? req.ip[0] : req.ip,
     });
 
     res.status(200).json({
