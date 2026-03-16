@@ -75,7 +75,7 @@ async function createVenueHandler(req: Request, res: Response, next: NextFunctio
       entityType: 'venue',
       entityId: createdVenue.id,
       payload: { type, title },
-      ipAddress: Array.isArray(req.ip) ? req.ip[0] : req.ip,
+      ipAddress: req.ip,
     });
 
     res.status(201).json(createdVenue);
@@ -213,7 +213,7 @@ async function updateVenueHandler(req: Request, res: Response, next: NextFunctio
       entityType: 'venue',
       entityId: id,
       payload: updates,
-      ipAddress: Array.isArray(req.ip) ? req.ip[0] : req.ip,
+      ipAddress: req.ip,
     });
 
     res.status(200).json(updatedVenue);
@@ -268,7 +268,7 @@ async function submitVenueHandler(req: Request, res: Response, next: NextFunctio
       action: 'venue.submitted_for_review',
       entityType: 'venue',
       entityId: id,
-      ipAddress: Array.isArray(req.ip) ? req.ip[0] : req.ip,
+      ipAddress: req.ip,
     });
 
     res.status(200).json({ message: 'Emplacement soumis à la modération.' });
@@ -317,7 +317,7 @@ async function publishVenueHandler(req: Request, res: Response, next: NextFuncti
       action: 'venue.published',
       entityType: 'venue',
       entityId: id,
-      ipAddress: Array.isArray(req.ip) ? req.ip[0] : req.ip,
+      ipAddress: req.ip,
     });
 
     res.status(200).json({ message: 'Emplacement publié.' });
@@ -368,7 +368,7 @@ async function rejectVenueHandler(req: Request, res: Response, next: NextFunctio
       entityType: 'venue',
       entityId: id,
       payload: { reason },
-      ipAddress: Array.isArray(req.ip) ? req.ip[0] : req.ip,
+      ipAddress: req.ip,
     });
 
     res.status(200).json({ message: 'Emplacement refusé.' });
