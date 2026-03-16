@@ -15,8 +15,10 @@ const createVenueSchema = z.object({
   title: z.string().min(5),
   description: z.string().optional(),
   address: z.string().min(5),
-  latitude: z.number().min(-90).max(90),
-  longitude: z.number().min(-180).max(180),
+  coordinates: z.object({
+    latitude: z.number().min(-90).max(90),
+    longitude: z.number().min(-180).max(180),
+  }),
   price_indicative: z.number().positive().optional(),
 });
 
@@ -24,8 +26,10 @@ const updateVenueSchema = z.object({
   title: z.string().min(5).optional(),
   description: z.string().optional(),
   address: z.string().min(5).optional(),
-  latitude: z.number().min(-90).max(90).optional(),
-  longitude: z.number().min(-180).max(180).optional(),
+  coordinates: z.object({
+    latitude: z.number().min(-90).max(90),
+    longitude: z.number().min(-180).max(180),
+  }).optional(),
   price_indicative: z.number().positive().optional(),
 });
 
@@ -37,28 +41,31 @@ const rejectSchema = z.object({
 
 async function createVenueHandler(req: Request, res: Response, next: NextFunction): Promise<void> {
   try {
-    const { type, title, description, address, latitude, longitude, price_indicative } =
+    const { type, title, description, address, coordinates, price_indicative } =
       createVenueSchema.parse(req.body);
 
-    const { data: venue, error } = await supabase
-      .from('venues')
-      .insert({
-        owner_id: req.user!.id,
-        type,
-        title,
-        description: description ?? null,
-        address,
-        location: `POINT(${longitude} ${latitude})`,
-        latitude,
-        longitude,
-        price_indicative: price_indicative ?? null,
-        status: 'draft',
-      })
-      .select()
-      .single();
+     const { data: venue, error } = await supabase
+      .rpc('create_venue', {
+        p_owner_id: req.user!.id,
+        p_type: type,
+        p_title: title,
+        p_description: description ?? null,
+        p_address: address,
+        p_longitude: coordinates.longitude,
+        p_latitude: coordinates.latitude,
+        p_price_indicative: price_indicative ?? null,
+      });
 
     if (error) {
       res.status(400).json({ error: error.message });
+      return;
+    }
+
+    // rpc retourne un tableau, on prend le premier élément
+    const createdVenue = Array.isArray(venue) ? venue[0] : venue;
+
+    if (!createdVenue) {
+      res.status(500).json({ error: 'Échec création emplacement.' });
       return;
     }
 
@@ -66,12 +73,12 @@ async function createVenueHandler(req: Request, res: Response, next: NextFunctio
       actorId: req.user!.id,
       action: 'venue.created',
       entityType: 'venue',
-      entityId: venue.id,
+      entityId: createdVenue.id,
       payload: { type, title },
       ipAddress: Array.isArray(req.ip) ? req.ip[0] : req.ip,
     });
 
-    res.status(201).json(venue);
+    res.status(201).json(createdVenue);
   } catch (err) {
     next(err);
   }
@@ -176,13 +183,16 @@ async function updateVenueHandler(req: Request, res: Response, next: NextFunctio
 
     // Construire l'objet de mise à jour
     const updateData: Record<string, any> = {
-      ...updates,
       updated_at: new Date().toISOString(),
     };
 
-    // Si lat/lng sont mis à jour, mettre à jour aussi le champ PostGIS location
-    if (updates.latitude !== undefined && updates.longitude !== undefined) {
-      updateData.location = `POINT(${updates.longitude} ${updates.latitude})`;
+    if (updates.title) updateData.title = updates.title;
+    if (updates.description !== undefined) updateData.description = updates.description;
+    if (updates.address) updateData.address = updates.address;
+    if (updates.price_indicative !== undefined) updateData.price_indicative = updates.price_indicative;
+
+    if (updates.coordinates) {
+      updateData.location = `POINT(${updates.coordinates.longitude} ${updates.coordinates.latitude})`;
     }
 
     const { data: updatedVenue, error: updateError } = await supabase

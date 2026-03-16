@@ -49,10 +49,6 @@ async function requireAuth(req: Request, res: Response, next: NextFunction): Pro
     .eq('id', user.id)
     .single();
 
-
-console.log('User ID from token:', user.id)
-console.log('Profile query result:', profile, profileError)
-
   if (profileError || !profile) {
     res.status(403).json({ error: 'Profil utilisateur non trouvé.' });
     return;
