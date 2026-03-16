@@ -53,7 +53,7 @@ async function registerHandler(req: Request, res: Response, next: NextFunction):
       entityType: 'user',
       entityId: data.user?.id,
       payload: { email, role },
-      ipAddress: Array.isArray(req.ip) ? req.ip[0] : req.ip,
+      ipAddress: req.ip,
     });
 
     res.status(201).json({
@@ -97,7 +97,7 @@ async function loginHandler(req: Request, res: Response, next: NextFunction): Pr
       action: 'user.login',
       entityType: 'user',
       entityId: data.user.id,
-      ipAddress: Array.isArray(req.ip) ? req.ip[0] : req.ip,
+      ipAddress: req.ip,
     });
 
     res.status(200).json({
