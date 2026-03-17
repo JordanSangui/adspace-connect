@@ -1,5 +1,6 @@
 "use client";
 
+import { useShallow } from "zustand/react/shallow";
 import { useRouter } from "next/navigation";
 import OfferTable from "@/components/offer-table";
 import { type Offer } from "@/lib/mock-data";
@@ -13,8 +14,8 @@ const AGENCY_ID = "agency-1";
 
 export default function AgencyOffersPage() {
   const router = useRouter();
-  const offers = useAppStore(selectAgencyOffers(AGENCY_ID));
-  const contracts = useAppStore((s) => s.contracts);
+  const offers = useAppStore(useShallow(selectAgencyOffers(AGENCY_ID)));
+  const contracts = useAppStore(useShallow((s) => s.contracts));
   const updateOfferStatus = useAppStore((s) => s.updateOfferStatus);
 
   const handleAccept = (offer: Offer) => {

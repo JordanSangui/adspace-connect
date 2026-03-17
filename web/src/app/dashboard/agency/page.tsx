@@ -1,5 +1,7 @@
 "use client";
 
+import { useMemo } from "react";
+import { useShallow } from "zustand/react/shallow";
 import Link from "next/link";
 import StatsCard from "@/components/stats-card";
 import VenueCard from "@/components/venue-card";
@@ -15,10 +17,10 @@ import {
 const AGENCY_ID = "agency-1";
 
 export default function AgencyDashboard() {
-  const agencyOffers = useAppStore(selectAgencyOffers(AGENCY_ID));
-  const agencyContracts = useAppStore(selectAgencyContracts(AGENCY_ID));
-  const publishedVenues = useAppStore(selectPublishedVenues);
-  const totalSpent = useAppStore(selectAgencyTotalSpent(AGENCY_ID));
+  const agencyOffers = useAppStore(useShallow(selectAgencyOffers(AGENCY_ID)));
+  const agencyContracts = useAppStore(useShallow(selectAgencyContracts(AGENCY_ID)));
+  const publishedVenues = useAppStore(useShallow(selectPublishedVenues));
+  const totalSpent = useAppStore(useMemo(() => selectAgencyTotalSpent(AGENCY_ID), []));
 
   const acceptedOffers = agencyOffers.filter((o) => o.status === "Acceptée");
   const activeContracts = agencyContracts.filter(

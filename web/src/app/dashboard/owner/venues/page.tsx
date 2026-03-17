@@ -1,6 +1,7 @@
 "use client";
 
 import { useState } from "react";
+import { useShallow } from "zustand/react/shallow";
 import Link from "next/link";
 import VenueCard from "@/components/venue-card";
 import { type VenueStatus } from "@/lib/mock-data";
@@ -18,7 +19,7 @@ const statusFilters: (VenueStatus | "Tous")[] = [
 
 export default function OwnerVenuesPage() {
   const [filter, setFilter] = useState<VenueStatus | "Tous">("Tous");
-  const ownerVenues = useAppStore(selectOwnerVenues(OWNER_ID));
+  const ownerVenues = useAppStore(useShallow(selectOwnerVenues(OWNER_ID)));
 
   const filteredVenues =
     filter === "Tous"

@@ -1,6 +1,7 @@
 "use client";
 
 import { useState } from "react";
+import { useShallow } from "zustand/react/shallow";
 import OfferTable from "@/components/offer-table";
 import { formatXAF, type Offer } from "@/lib/mock-data";
 import { useAppStore, selectOwnerOffers } from "@/store/useAppStore";
@@ -8,7 +9,7 @@ import { useAppStore, selectOwnerOffers } from "@/store/useAppStore";
 const OWNER_ID = "owner-1";
 
 export default function OwnerOffersPage() {
-  const offers = useAppStore(selectOwnerOffers(OWNER_ID));
+  const offers = useAppStore(useShallow(selectOwnerOffers(OWNER_ID)));
   const updateOfferStatus = useAppStore((s) => s.updateOfferStatus);
 
   const [showCounterModal, setShowCounterModal] = useState(false);

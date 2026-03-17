@@ -1,6 +1,6 @@
 "use client";
 
-import { use } from "react";
+import { use, useMemo } from "react";
 import Link from "next/link";
 import { formatXAF, formatDate, type ContractStatus } from "@/lib/mock-data";
 import { useAppStore, selectContractById } from "@/store/useAppStore";
@@ -23,7 +23,8 @@ export default function ContractDetailPage({
   params: Promise<{ id: string }>;
 }) {
   const { id } = use(params);
-  const contract = useAppStore(selectContractById(id));
+  const contractSelector = useMemo(() => selectContractById(id), [id]);
+  const contract = useAppStore(contractSelector);
   const markContractPaid = useAppStore((s) => s.markContractPaid);
   const updateContractStatus = useAppStore((s) => s.updateContractStatus);
 

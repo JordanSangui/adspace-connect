@@ -1,6 +1,7 @@
 "use client";
 
 import { useState } from "react";
+import { useShallow } from "zustand/react/shallow";
 import VenueCard from "@/components/venue-card";
 import {
   formatXAF,
@@ -14,7 +15,7 @@ const AGENCY_ID = "agency-1";
 const AGENCY_NAME = "PubCam Agency";
 
 export default function AgencySearchPage() {
-  const publishedVenues = useAppStore(selectPublishedVenues);
+  const publishedVenues = useAppStore(useShallow(selectPublishedVenues));
   const addOffer = useAppStore((s) => s.addOffer);
 
   const [search, setSearch] = useState("");

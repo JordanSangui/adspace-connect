@@ -1,5 +1,7 @@
 "use client";
 
+import { useMemo } from "react";
+import { useShallow } from "zustand/react/shallow";
 import Link from "next/link";
 import StatsCard from "@/components/stats-card";
 import OfferTable from "@/components/offer-table";
@@ -16,11 +18,11 @@ import {
 const OWNER_ID = "owner-1";
 
 export default function OwnerDashboard() {
-  const offers = useAppStore(selectOwnerOffers(OWNER_ID));
-  const activeVenues = useAppStore(selectOwnerActiveVenueCount(OWNER_ID));
-  const pendingOffers = useAppStore(selectOwnerPendingOfferCount(OWNER_ID));
-  const monthlyRevenue = useAppStore(selectOwnerMonthlyRevenue(OWNER_ID));
-  const acceptRate = useAppStore(selectOwnerAcceptRate(OWNER_ID));
+  const offers = useAppStore(useShallow(selectOwnerOffers(OWNER_ID)));
+  const activeVenues = useAppStore(useMemo(() => selectOwnerActiveVenueCount(OWNER_ID), []));
+  const pendingOffers = useAppStore(useMemo(() => selectOwnerPendingOfferCount(OWNER_ID), []));
+  const monthlyRevenue = useAppStore(useMemo(() => selectOwnerMonthlyRevenue(OWNER_ID), []));
+  const acceptRate = useAppStore(useMemo(() => selectOwnerAcceptRate(OWNER_ID), []));
 
   return (
     <div className="animate-fade-in">
