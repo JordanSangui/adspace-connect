@@ -127,7 +127,7 @@ async function listOffersHandler(req: Request, res: Response, next: NextFunction
 
 async function getOfferHandler(req: Request, res: Response, next: NextFunction): Promise<void> {
   try {
-    const { id } = req.params;
+    const id = req.params.id as string;
 
     const { data: offer, error } = await supabase
       .from('offers')
@@ -164,7 +164,7 @@ async function getOfferHandler(req: Request, res: Response, next: NextFunction):
 
 async function acceptOfferHandler(req: Request, res: Response, next: NextFunction): Promise<void> {
   try {
-    const { id } = req.params;
+    const id = req.params.id as string;
 
     // 1. Récupérer l'offre
     const { data: offer, error: fetchError } = await supabase
@@ -219,7 +219,7 @@ async function acceptOfferHandler(req: Request, res: Response, next: NextFunctio
 
 async function rejectOfferHandler(req: Request, res: Response, next: NextFunction): Promise<void> {
   try {
-    const { id } = req.params;
+    const id = req.params.id as string;
 
     // 1. Récupérer l'offre
     const { data: offer, error: fetchError } = await supabase
@@ -274,7 +274,7 @@ async function rejectOfferHandler(req: Request, res: Response, next: NextFunctio
 
 async function counterOfferHandler(req: Request, res: Response, next: NextFunction): Promise<void> {
   try {
-    const { id } = req.params;
+    const id = req.params.id as string;
     const { counter_price, counter_message } = counterOfferSchema.parse(req.body);
 
     // 1. Récupérer l'offre
@@ -338,7 +338,7 @@ async function counterOfferHandler(req: Request, res: Response, next: NextFuncti
 
 async function cancelOfferHandler(req: Request, res: Response, next: NextFunction): Promise<void> {
   try {
-    const { id } = req.params;
+    const id = req.params.id as string;
 
     // 1. Récupérer l'offre
     const { data: offer, error: fetchError } = await supabase
