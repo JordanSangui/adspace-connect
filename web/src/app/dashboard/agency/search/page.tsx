@@ -3,17 +3,20 @@
 import { useState } from "react";
 import VenueCard from "@/components/venue-card";
 import {
-  mockVenues,
   formatXAF,
   cities,
   venueTypes,
   type Venue,
-  type VenueType,
 } from "@/lib/mock-data";
+import { useAppStore, selectPublishedVenues } from "@/store/useAppStore";
 
-const publishedVenues = mockVenues.filter((v) => v.status === "Publié");
+const AGENCY_ID = "agency-1";
+const AGENCY_NAME = "PubCam Agency";
 
 export default function AgencySearchPage() {
+  const publishedVenues = useAppStore(selectPublishedVenues);
+  const addOffer = useAppStore((s) => s.addOffer);
+
   const [search, setSearch] = useState("");
   const [city, setCity] = useState("");
   const [type, setType] = useState("");
@@ -50,7 +53,16 @@ export default function AgencySearchPage() {
   };
 
   const handleSubmitOffer = () => {
-    if (!offerPrice || !offerStartDate || !offerEndDate) return;
+    if (!offerPrice || !offerStartDate || !offerEndDate || !selectedVenue) return;
+    addOffer({
+      venueId: selectedVenue.id,
+      agencyId: AGENCY_ID,
+      agencyName: AGENCY_NAME,
+      proposedPrice: Number(offerPrice),
+      message: offerMessage || undefined,
+      startDate: offerStartDate,
+      endDate: offerEndDate,
+    });
     setOfferSent(true);
     setTimeout(() => setShowOfferModal(false), 2000);
   };

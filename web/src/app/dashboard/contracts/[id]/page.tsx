@@ -2,7 +2,8 @@
 
 import { use } from "react";
 import Link from "next/link";
-import { mockContracts, formatXAF, formatDate, type ContractStatus } from "@/lib/mock-data";
+import { formatXAF, formatDate, type ContractStatus } from "@/lib/mock-data";
+import { useAppStore, selectContractById } from "@/store/useAppStore";
 
 const timelineSteps: ContractStatus[] = [
   "Offre acceptée",
@@ -22,9 +23,33 @@ export default function ContractDetailPage({
   params: Promise<{ id: string }>;
 }) {
   const { id } = use(params);
-  const contract = mockContracts.find((c) => c.id === id) || mockContracts[0];
+  const contract = useAppStore(selectContractById(id));
+  const markContractPaid = useAppStore((s) => s.markContractPaid);
+  const updateContractStatus = useAppStore((s) => s.updateContractStatus);
+
+  if (!contract) {
+    return (
+      <div className="animate-fade-in text-center py-20">
+        <p className="text-gray-400">Contrat introuvable.</p>
+        <Link href="/dashboard/owner" className="text-primary text-sm mt-4 inline-block hover:underline">
+          Retour au tableau de bord
+        </Link>
+      </div>
+    );
+  }
 
   const currentStepIndex = getStepIndex(contract.status);
+
+  const handlePay = () => {
+    markContractPaid(contract.id);
+  };
+
+  const handleAdvanceStatus = () => {
+    const nextIndex = currentStepIndex + 1;
+    if (nextIndex < timelineSteps.length) {
+      updateContractStatus(contract.id, timelineSteps[nextIndex]);
+    }
+  };
 
   return (
     <div className="animate-fade-in max-w-4xl mx-auto">
@@ -201,22 +226,34 @@ export default function ContractDetailPage({
                 </div>
               ) : (
                 <p className="text-xs text-yellow-600 mt-2 font-medium">
-                  ⏳ En attente de paiement
+                  En attente de paiement
                 </p>
               )}
             </div>
 
             {!contract.paidAt && (
-              <button className="w-full py-3.5 bg-accent hover:bg-accent-dark text-white font-semibold rounded-xl transition-all duration-200 hover:shadow-md flex items-center justify-center gap-2 cursor-pointer">
+              <button
+                onClick={handlePay}
+                className="w-full py-3.5 bg-accent hover:bg-accent-dark text-white font-semibold rounded-xl transition-all duration-200 hover:shadow-md flex items-center justify-center gap-2 cursor-pointer"
+              >
                 <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                   <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M12 18h.01M8 21h8a2 2 0 002-2V5a2 2 0 00-2-2H8a2 2 0 00-2 2v14a2 2 0 002 2z" />
                 </svg>
                 Payer via Mobile Money
               </button>
             )}
+
+            {contract.paidAt && contract.status !== "Terminé" && contract.status !== "En cours" && (
+              <button
+                onClick={handleAdvanceStatus}
+                className="w-full py-3 bg-primary hover:bg-primary-light text-white font-semibold rounded-xl transition-all duration-200 hover:shadow-md cursor-pointer mt-3"
+              >
+                Étape suivante →
+              </button>
+            )}
           </div>
 
-          {/* Actions */}
+          {/* Documents */}
           <div className="bg-white rounded-2xl border border-gray-100 shadow-sm p-8">
             <h2 className="text-lg font-bold text-gray-900 mb-6">
               Documents

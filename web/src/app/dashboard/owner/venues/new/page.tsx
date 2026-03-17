@@ -1,16 +1,21 @@
 "use client";
 
 import { useState } from "react";
+import { useRouter } from "next/navigation";
 import Link from "next/link";
 import { formatXAF, type VenueType } from "@/lib/mock-data";
+import { useAppStore } from "@/store/useAppStore";
 
-const venueTypes: { value: VenueType; label: string; icon: string }[] = [
-  { value: "Panneau fixe", label: "Panneau fixe", icon: "📋" },
-  { value: "Mobile", label: "Mobile", icon: "🚌" },
-  { value: "Vitrine", label: "Vitrine", icon: "🏪" },
+const venueTypes: { value: VenueType; label: string; desc: string }[] = [
+  { value: "Panneau fixe", label: "Panneau fixe", desc: "Panneau statique" },
+  { value: "Mobile", label: "Mobile", desc: "Véhicule / bus" },
+  { value: "Vitrine", label: "Vitrine", desc: "Espace en magasin" },
 ];
 
 export default function NewVenuePage() {
+  const router = useRouter();
+  const addVenue = useAppStore((s) => s.addVenue);
+
   const [currentStep, setCurrentStep] = useState(1);
   const [formData, setFormData] = useState({
     type: "" as VenueType | "",
@@ -46,8 +51,21 @@ export default function NewVenuePage() {
   };
 
   const handleSubmit = () => {
-    alert("Emplacement soumis pour révision ! (Démo)");
-    window.location.href = "/dashboard/owner/venues";
+    if (!formData.type) return;
+    addVenue({
+      title: formData.title,
+      description: formData.description,
+      type: formData.type as VenueType,
+      address: formData.address,
+      city: formData.city,
+      price: Number(formData.price),
+      ownerId: "owner-1",
+      ownerName: "Jean-Pierre Kamga",
+      availableFrom: formData.availableFrom,
+      availableTo: formData.availableTo,
+      dimensions: formData.dimensions || undefined,
+    });
+    router.push("/dashboard/owner/venues");
   };
 
   return (
@@ -126,9 +144,11 @@ export default function NewVenuePage() {
                         : "border-gray-200 hover:border-gray-300"
                     }`}
                   >
-                    <span className="text-2xl block mb-1">{type.icon}</span>
-                    <span className="text-sm font-medium text-gray-700">
+                    <span className="text-sm font-semibold text-gray-900 block">
                       {type.label}
+                    </span>
+                    <span className="text-xs text-gray-400 mt-0.5 block">
+                      {type.desc}
                     </span>
                   </button>
                 ))}

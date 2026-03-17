@@ -1,40 +1,34 @@
 "use client";
 
-import { useState } from "react";
 import { useRouter } from "next/navigation";
 import OfferTable from "@/components/offer-table";
-import { mockOffers, mockContracts, type Offer } from "@/lib/mock-data";
+import { type Offer } from "@/lib/mock-data";
+import {
+  useAppStore,
+  selectAgencyOffers,
+  selectContractByOfferId,
+} from "@/store/useAppStore";
 
-const agencyOffers = mockOffers.filter(
-  (o) => o.agencyId === "agency-1" || o.agencyId === "agency-2" || o.agencyId === "agency-3"
-);
+const AGENCY_ID = "agency-1";
 
 export default function AgencyOffersPage() {
   const router = useRouter();
-  const [offers, setOffers] = useState(agencyOffers);
+  const offers = useAppStore(selectAgencyOffers(AGENCY_ID));
+  const contracts = useAppStore((s) => s.contracts);
+  const updateOfferStatus = useAppStore((s) => s.updateOfferStatus);
 
   const handleAccept = (offer: Offer) => {
-    setOffers((prev) =>
-      prev.map((o) =>
-        o.id === offer.id ? { ...o, status: "Acceptée" as const } : o
-      )
-    );
+    updateOfferStatus(offer.id, "Acceptée");
   };
 
   const handleReject = (offer: Offer) => {
-    setOffers((prev) =>
-      prev.map((o) =>
-        o.id === offer.id ? { ...o, status: "Refusée" as const } : o
-      )
-    );
+    updateOfferStatus(offer.id, "Refusée");
   };
 
   const handleViewContract = (offer: Offer) => {
-    const contract = mockContracts.find((c) => c.offerId === offer.id);
+    const contract = contracts.find((c) => c.offerId === offer.id);
     if (contract) {
       router.push(`/dashboard/contracts/${contract.id}`);
-    } else {
-      router.push(`/dashboard/contracts/contract-1`);
     }
   };
 

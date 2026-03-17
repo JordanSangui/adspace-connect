@@ -2,33 +2,26 @@
 
 import { useState } from "react";
 import OfferTable from "@/components/offer-table";
-import { mockOffers, formatXAF, type Offer } from "@/lib/mock-data";
+import { formatXAF, type Offer } from "@/lib/mock-data";
+import { useAppStore, selectOwnerOffers } from "@/store/useAppStore";
 
-const ownerOffers = mockOffers.filter(
-  (o) => o.ownerId === "owner-1" || o.ownerId === "owner-2"
-);
+const OWNER_ID = "owner-1";
 
 export default function OwnerOffersPage() {
-  const [offers, setOffers] = useState(ownerOffers);
+  const offers = useAppStore(selectOwnerOffers(OWNER_ID));
+  const updateOfferStatus = useAppStore((s) => s.updateOfferStatus);
+
   const [showCounterModal, setShowCounterModal] = useState(false);
   const [selectedOffer, setSelectedOffer] = useState<Offer | null>(null);
   const [counterPrice, setCounterPrice] = useState("");
   const [counterMessage, setCounterMessage] = useState("");
 
   const handleAccept = (offer: Offer) => {
-    setOffers((prev) =>
-      prev.map((o) =>
-        o.id === offer.id ? { ...o, status: "Acceptée" as const } : o
-      )
-    );
+    updateOfferStatus(offer.id, "Acceptée");
   };
 
   const handleReject = (offer: Offer) => {
-    setOffers((prev) =>
-      prev.map((o) =>
-        o.id === offer.id ? { ...o, status: "Refusée" as const } : o
-      )
-    );
+    updateOfferStatus(offer.id, "Refusée");
   };
 
   const handleCounterOffer = (offer: Offer) => {
@@ -40,16 +33,10 @@ export default function OwnerOffersPage() {
 
   const submitCounterOffer = () => {
     if (!selectedOffer || !counterPrice) return;
-    setOffers((prev) =>
-      prev.map((o) =>
-        o.id === selectedOffer.id
-          ? {
-              ...o,
-              status: "Contre-offre" as const,
-              counterOfferPrice: Number(counterPrice),
-            }
-          : o
-      )
+    updateOfferStatus(
+      selectedOffer.id,
+      "Contre-offre",
+      Number(counterPrice)
     );
     setShowCounterModal(false);
   };

@@ -3,11 +3,10 @@
 import { useState } from "react";
 import Link from "next/link";
 import VenueCard from "@/components/venue-card";
-import { mockVenues, type VenueStatus } from "@/lib/mock-data";
+import { type VenueStatus } from "@/lib/mock-data";
+import { useAppStore, selectOwnerVenues } from "@/store/useAppStore";
 
-const ownerVenues = mockVenues.filter(
-  (v) => v.ownerId === "owner-1" || v.ownerId === "owner-2"
-);
+const OWNER_ID = "owner-1";
 
 const statusFilters: (VenueStatus | "Tous")[] = [
   "Tous",
@@ -19,6 +18,7 @@ const statusFilters: (VenueStatus | "Tous")[] = [
 
 export default function OwnerVenuesPage() {
   const [filter, setFilter] = useState<VenueStatus | "Tous">("Tous");
+  const ownerVenues = useAppStore(selectOwnerVenues(OWNER_ID));
 
   const filteredVenues =
     filter === "Tous"

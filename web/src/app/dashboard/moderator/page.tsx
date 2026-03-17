@@ -1,24 +1,24 @@
 "use client";
 
 import { useState } from "react";
-import { mockVenues, formatDate, type Venue } from "@/lib/mock-data";
-
-const pendingVenues = mockVenues.filter(
-  (v) => v.status === "En révision" || v.status === "Brouillon"
-);
+import { formatDate, type Venue } from "@/lib/mock-data";
+import { useAppStore } from "@/store/useAppStore";
 
 export default function ModeratorDashboard() {
-  const [venues, setVenues] = useState(pendingVenues);
+  const venues = useAppStore((s) => s.venues);
+  const updateVenueStatus = useAppStore((s) => s.updateVenueStatus);
+
   const [showRejectModal, setShowRejectModal] = useState(false);
   const [selectedVenue, setSelectedVenue] = useState<Venue | null>(null);
   const [rejectReason, setRejectReason] = useState("");
 
+  // Show all venues that are not published (moderator sees pending + reviewed items)
+  const moderationVenues = venues.filter(
+    (v) => v.status === "En révision" || v.status === "Brouillon" || v.status === "Publié" || v.status === "Refusé"
+  );
+
   const handleApprove = (venue: Venue) => {
-    setVenues((prev) =>
-      prev.map((v) =>
-        v.id === venue.id ? { ...v, status: "Publié" as const } : v
-      )
-    );
+    updateVenueStatus(venue.id, "Publié");
   };
 
   const handleRejectClick = (venue: Venue) => {
@@ -29,11 +29,7 @@ export default function ModeratorDashboard() {
 
   const handleRejectConfirm = () => {
     if (!selectedVenue) return;
-    setVenues((prev) =>
-      prev.map((v) =>
-        v.id === selectedVenue.id ? { ...v, status: "Refusé" as const } : v
-      )
-    );
+    updateVenueStatus(selectedVenue.id, "Refusé");
     setShowRejectModal(false);
   };
 
@@ -47,6 +43,12 @@ export default function ModeratorDashboard() {
         return "bg-yellow-50 text-yellow-700 border border-yellow-200";
     }
   };
+
+  const pendingCount = venues.filter(
+    (v) => v.status === "En révision" || v.status === "Brouillon"
+  ).length;
+  const approvedCount = venues.filter((v) => v.status === "Publié").length;
+  const rejectedCount = venues.filter((v) => v.status === "Refusé").length;
 
   return (
     <div className="animate-fade-in">
@@ -63,18 +65,13 @@ export default function ModeratorDashboard() {
       {/* Stats */}
       <div className="flex gap-3 mb-6">
         <span className="px-4 py-2 rounded-xl bg-yellow-50 text-yellow-700 text-sm font-medium border border-yellow-200">
-          En attente:{" "}
-          {
-            venues.filter(
-              (v) => v.status === "En révision" || v.status === "Brouillon"
-            ).length
-          }
+          En attente: {pendingCount}
         </span>
         <span className="px-4 py-2 rounded-xl bg-green-50 text-green-700 text-sm font-medium border border-green-200">
-          Approuvés: {venues.filter((v) => v.status === "Publié").length}
+          Approuvés: {approvedCount}
         </span>
         <span className="px-4 py-2 rounded-xl bg-red-50 text-red-700 text-sm font-medium border border-red-200">
-          Refusés: {venues.filter((v) => v.status === "Refusé").length}
+          Refusés: {rejectedCount}
         </span>
       </div>
 
@@ -108,7 +105,7 @@ export default function ModeratorDashboard() {
               </tr>
             </thead>
             <tbody className="divide-y divide-gray-50">
-              {venues.map((venue) => (
+              {moderationVenues.map((venue) => (
                 <tr
                   key={venue.id}
                   className="hover:bg-gray-50/50 transition-colors"
@@ -177,7 +174,7 @@ export default function ModeratorDashboard() {
           </table>
         </div>
 
-        {venues.length === 0 && (
+        {moderationVenues.length === 0 && (
           <div className="text-center py-12">
             <p className="text-gray-400 text-sm">
               Aucun emplacement en attente de modération.
